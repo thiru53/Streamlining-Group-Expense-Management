@@ -14,6 +14,7 @@ import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,11 +40,17 @@ public class ExpenseController {
 
     //Endpoint 1
     @PostMapping("/expense/group")
-    public ResponseEntity<Object> createExpenseSharing() {
+    public ResponseEntity<Object> createExpenseSharing(@RequestBody ExpenseSharing expenseSharing) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for adding expense sharing group ");
-        return ResponseEntity.ok(response);
+        try{
+            preValidation(expenseSharing);
+            ExpenseSharing savedExpenseSharing = expenseSharingService.createExpenseSharing(expenseSharing);
+            return ResponseEntity.ok(savedExpenseSharing);
+        }catch (Exception exe) {
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
 
     //Endpoint 2
@@ -162,4 +169,13 @@ public class ExpenseController {
 
 
     // Add other endpoints as per your requirements
+    private void preValidation(ExpenseSharing expenseSharing) {
+        if (Objects.isNull(expenseSharing.getTitle()) || expenseSharing.getTitle().isEmpty() || expenseSharing.getTitle().isBlank() ) {
+            throw new RuntimeException("Title is mandatory");
+        }
+        if(CollectionUtils.isEmpty(expenseSharing.getParticipants()) || expenseSharing.getParticipants().stream().filter(Objects::nonNull).filter(str -> !str.trim().isBlank()).count() <= 1 ) {
+            throw new RuntimeException("Participants is mandatory");
+        }
+
+    }
 }
