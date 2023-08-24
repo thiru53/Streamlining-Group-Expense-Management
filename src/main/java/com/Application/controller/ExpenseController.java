@@ -56,10 +56,7 @@ public class ExpenseController {
     //Endpoint 2
     @GetMapping("/expense/groups")
     public ResponseEntity<?> getAllExpenseSharing() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for retrieving all expense sharing group ");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(expenseSharingRepository.findAll());
     }
 
     //Endpoint 3
