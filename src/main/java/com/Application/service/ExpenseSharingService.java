@@ -15,6 +15,9 @@ public class ExpenseSharingService {
         this.expenseSharingRepository = expenseSharingRepository;
     }
 
+    public ExpenseSharing createExpenseSharing(ExpenseSharing expenseSharing) {
+        return expenseSharingRepository.save(expenseSharing);
+    }
 
 
     // Add other methods as per your requirements
