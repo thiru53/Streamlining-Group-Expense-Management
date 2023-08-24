@@ -19,6 +19,10 @@ public class ExpenseSharingService {
         return expenseSharingRepository.save(expenseSharing);
     }
 
+    public ExpenseSharing getExpenseSharingById(Long id) {
+        return expenseSharingRepository.findById(id).orElseThrow(() -> new RuntimeException("Expense Group does not exists for id :"+id));
+    }
+
 
     // Add other methods as per your requirements
 }
