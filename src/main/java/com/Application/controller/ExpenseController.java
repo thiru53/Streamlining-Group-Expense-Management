@@ -63,9 +63,14 @@ public class ExpenseController {
     @GetMapping("/expense/groupById/{id}")
     public ResponseEntity<?> getExpenseSharingById(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for retrieving expense sharing group using id ");
-        return ResponseEntity.ok(response);
+        try {
+            ExpenseSharing expenseSharing =  expenseSharingService.getExpenseSharingById(id);
+            return ResponseEntity.ok(expenseSharing);
+        } catch (Exception exe) {
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
     }
 
 
