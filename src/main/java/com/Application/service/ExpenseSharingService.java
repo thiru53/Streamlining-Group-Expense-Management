@@ -37,6 +37,11 @@ public class ExpenseSharingService {
         return expenseSharingRepository.save(expenseSharingFromDB);
     }
 
+    public void deleteExpenseSharingById(Long id) {
+        ExpenseSharing expenseSharingFromDB =  expenseSharingRepository.findById(id).orElseThrow(() -> new RuntimeException("Expense sharing group with id "+id+" not found"));
+        expenseSharingRepository.delete(expenseSharingFromDB);
+    }
+
 
     // Add other methods as per your requirements
 }
