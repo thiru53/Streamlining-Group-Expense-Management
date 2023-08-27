@@ -92,9 +92,15 @@ public class ExpenseController {
     @PostMapping("/expense/group/delete/{id}")
     public ResponseEntity<?> deleteExpenseSharingById(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for deleting expense sharing group using id ");
-        return ResponseEntity.ok(response);
+        try {
+            expenseSharingService.deleteExpenseSharingById(id);
+            response.put("success", true);
+            return ResponseEntity.ok(response);
+        } catch (Exception exe) {
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.NOT_MODIFIED);
     }
 
     //Endpoint 6
