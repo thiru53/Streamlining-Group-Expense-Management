@@ -11,6 +11,7 @@ import com.Application.service.ExpenseSharingService;
 import jakarta.transaction.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -43,7 +44,7 @@ public class ExpenseController {
     public ResponseEntity<Object> createExpenseSharing(@RequestBody ExpenseSharing expenseSharing) {
         Map<String, Object> response = new HashMap<>();
         try{
-            preValidation(expenseSharing);
+            preValidationExpenseSharing(expenseSharing);
             ExpenseSharing savedExpenseSharing = expenseSharingService.createExpenseSharing(expenseSharing);
             return ResponseEntity.ok(savedExpenseSharing);
         }catch (Exception exe) {
@@ -105,20 +106,33 @@ public class ExpenseController {
 
     //Endpoint 6
     @PostMapping("/expense/group/{groupId}/addExpense")
-    public ResponseEntity<?> createExpense(@PathVariable Long groupId) {
+    public ResponseEntity<?> createExpense(@PathVariable Long groupId, @RequestBody Expense expense) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for adding expense related to group");
-        return ResponseEntity.ok(response);
+        try {
+            //preValidationExpense(expense, null);
+            ExpenseSharing expenseSharing = expenseSharingRepository.findById(groupId).orElseThrow( () -> new RuntimeException("Expense Sharing group with id " + groupId + " not found"));
+            preValidationExpense(expense, expenseSharing);
+            expense.setGroupId(groupId);
+            Expense savedExpense = expenseRepository.save(expense);
+            return ResponseEntity.ok(savedExpense);
+        } catch (Exception exe) {
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
 
     //Endpoint 7
     @GetMapping("/expense")
     public ResponseEntity<?> getAllExpenses() {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for retriving all expenses ");
-        return ResponseEntity.ok(response);
+        try{
+            return ResponseEntity.ok(expenseRepository.findAll());
+        } catch (Exception exe){
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
 
     //Endpoint 8
@@ -182,13 +196,40 @@ public class ExpenseController {
 
 
     // Add other endpoints as per your requirements
-    private void preValidation(ExpenseSharing expenseSharing) {
+    private void preValidationExpenseSharing(ExpenseSharing expenseSharing) {
         if (Objects.isNull(expenseSharing.getTitle()) || expenseSharing.getTitle().isEmpty() || expenseSharing.getTitle().isBlank() ) {
             throw new RuntimeException("Title of the group should not be null or blank");
         }
         if(CollectionUtils.isEmpty(expenseSharing.getParticipants()) || expenseSharing.getParticipants().stream().filter(Objects::nonNull).filter(str -> !str.trim().isBlank()).count() <= 1 ) {
             throw new RuntimeException("Participants list should contain more than 1 non-blank participant");
         }
-
     }
+
+    private void preValidationExpense(Expense expense, ExpenseSharing expenseSharing) {
+        if (Objects.isNull(expense.getTitle()) || expense.getTitle().isEmpty() || expense.getTitle().isBlank() ) {
+            throw new RuntimeException("Title of the group should not be null or blank");
+        }
+        if (Objects.isNull(expense.getPaidBy()) || expense.getPaidBy().isEmpty() || expense.getPaidBy().isBlank() ) {
+            throw new RuntimeException("PaidBy of the group should not be null or blank");
+        }
+        if(CollectionUtils.isEmpty(expense.getForWhom()) || expense.getForWhom().stream().filter(Objects::nonNull).filter(str -> !str.trim().isBlank()).count() <= 1 ) {
+            throw new RuntimeException("Participants list should contain more than 1 non-blank participant");
+        }
+
+        if(Objects.nonNull(expenseSharing)) {
+            if (!expenseSharing.getParticipants().contains(expense.getPaidBy())) {
+                throw new RuntimeException("Paid by participant '" + expense.getPaidBy() + "' is not found in the participants list");
+            }
+
+            List<String> participants = expenseSharing.getParticipants();
+            participants.replaceAll(String::toLowerCase);
+
+            for(String fromWhom : expense.getForWhom()) {
+                if(!participants.contains(fromWhom.toLowerCase())) {
+                    throw new RuntimeException("Participant-2 '" + fromWhom + "' is not found in the participants list"+expenseSharing.getParticipants());
+                }
+            }
+        }
+    }
+
 }
