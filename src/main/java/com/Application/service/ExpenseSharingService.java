@@ -20,7 +20,21 @@ public class ExpenseSharingService {
     }
 
     public ExpenseSharing getExpenseSharingById(Long id) {
-        return expenseSharingRepository.findById(id).orElseThrow(() -> new RuntimeException("Expense Group does not exists for id :"+id));
+        return expenseSharingRepository.findById(id).orElseThrow(() -> new RuntimeException("Expense sharing group with id "+id+" not found"));
+    }
+
+    public ExpenseSharing updateExpenseSharing(Long id, ExpenseSharing expenseSharing) {
+        ExpenseSharing expenseSharingFromDB =  expenseSharingRepository.findById(id).orElseThrow(() -> new RuntimeException("Expense sharing group with id "+id+" not found"));
+        expenseSharing.setId(id);
+        if(Objects.equals(expenseSharing, expenseSharingFromDB)) {
+            throw new RuntimeException("Expense Sharing details are the same. No updation required.");
+        }
+        expenseSharingFromDB.setTitle(expenseSharing.getTitle());
+        expenseSharingFromDB.setCategory(expenseSharing.getCategory());
+        expenseSharingFromDB.setDescription(expenseSharing.getDescription());
+        expenseSharingFromDB.getParticipants().addAll(expenseSharing.getParticipants());
+
+        return expenseSharingRepository.save(expenseSharingFromDB);
     }
 
 

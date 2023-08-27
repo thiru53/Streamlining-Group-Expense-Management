@@ -76,11 +76,16 @@ public class ExpenseController {
 
     //Endpoint 4
     @PostMapping("/expense/group/update/{id}")
-    public ResponseEntity<?> updateExpenseSharing(@PathVariable Long id) {
+    public ResponseEntity<?> updateExpenseSharing(@PathVariable Long id, @RequestBody ExpenseSharing expenseSharing ) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for updating expense sharing group using id ");
-        return ResponseEntity.ok(response);
+        try{
+            ExpenseSharing updatedExpenseSharing = expenseSharingService.updateExpenseSharing(id, expenseSharing);
+            return ResponseEntity.ok(expenseSharing);
+        } catch (Exception exe) {
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
 
     //Endpoint 5
@@ -173,10 +178,10 @@ public class ExpenseController {
     // Add other endpoints as per your requirements
     private void preValidation(ExpenseSharing expenseSharing) {
         if (Objects.isNull(expenseSharing.getTitle()) || expenseSharing.getTitle().isEmpty() || expenseSharing.getTitle().isBlank() ) {
-            throw new RuntimeException("Title is mandatory");
+            throw new RuntimeException("Title of the group should not be null or blank");
         }
         if(CollectionUtils.isEmpty(expenseSharing.getParticipants()) || expenseSharing.getParticipants().stream().filter(Objects::nonNull).filter(str -> !str.trim().isBlank()).count() <= 1 ) {
-            throw new RuntimeException("Participants is mandatory");
+            throw new RuntimeException("Participants list should contain more than 1 non-blank participant");
         }
 
     }
