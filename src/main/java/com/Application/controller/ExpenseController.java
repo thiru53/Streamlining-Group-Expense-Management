@@ -139,18 +139,28 @@ public class ExpenseController {
     @GetMapping("/expense/group/{groupId}")
     public ResponseEntity<?> getAllExpensesByGroupId(@PathVariable Long groupId) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for retriving all expense related to group");
-        return ResponseEntity.ok(response);
+        try{
+            List<Expense> expensesFromDB =  expenseRepository.findAllExpensesByGroupId(groupId);
+            return ResponseEntity.ok(expensesFromDB);
+        } catch (Exception exe) {
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
 
     //Endpoint 9
     @GetMapping("/expense/{expenseId}")
     public ResponseEntity<?> getExpenseById(@PathVariable Long expenseId) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for retrieving expense related to expense id");
-        return ResponseEntity.ok(response);
+        try{
+            Expense expenseFromDB =  expenseRepository.findById(expenseId).orElseThrow(() -> new RuntimeException("Expense group with id "+expenseId+" not found"));
+            return ResponseEntity.ok(expenseFromDB);
+        } catch (Exception exe) {
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
 
 
