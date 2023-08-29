@@ -166,11 +166,16 @@ public class ExpenseController {
 
     //Endpoint 10
     @PostMapping("/expense/update/{expense_id}")
-    public ResponseEntity<?> updateExpense(@PathVariable("expense_id") Long expenseId) {
+    public ResponseEntity<?> updateExpense(@PathVariable("expense_id") Long expenseId, @RequestBody Expense expense) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Logic for updating expense using expense id");
-        return ResponseEntity.ok(response);
+        try {
+            Expense updatedExpense =  expenseService.updateExpense(expenseId, expense);
+            return ResponseEntity.ok(updatedExpense);
+        } catch (Exception exe) {
+            response.put("success", false);
+            response.put("message", exe.getMessage());
+        }
+        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
     }
 
 

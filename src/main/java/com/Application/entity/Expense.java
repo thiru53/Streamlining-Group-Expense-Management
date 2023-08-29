@@ -7,10 +7,12 @@ import java.util.List;
 import jakarta.persistence.*;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode
 @Entity
 @Table(name = "expenses")
 public class Expense {
